@@ -19,6 +19,7 @@ def init_radio(address):
 
 def set_freq(address, freq):
     global high_cut_enabled, low_cut_enabled
+    freq = round(freq, 1)  # necessary for python logic where the float has trailing numbers
     freq14bit = round(int(4 * (freq * 1000000 + 225000) / 32768), 1)
     freqH = freq14bit >> 8
     freqL = freq14bit & 0xFF
