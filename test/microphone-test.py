@@ -1,37 +1,54 @@
-import sounddevice as sd
-import numpy as np
-import wavio
+import pyaudio
+import wave
 import datetime
+import threading
 
-# Parameters for recording
-RATE = 44100  # samples per second
-CHANNELS = 1  # mono recording
-DTYPE = np.int16  # data type
-VOLUME = 0.5  # volume level, range [0.0, 1.0]
+# Ask user for microphone input device
+p = pyaudio.PyAudio()
+info = p.get_host_api_info_by_index(0)
+numdevices = info.get('deviceCount')
+devices = [p.get_device_info_by_host_api_device_index(0, i) for i in range(numdevices)]
+input_devices = [device for device in devices if device.get('maxInputChannels') > 0]
 
-def generate_filename():
-    current_time = datetime.datetime.now()
-    return current_time.strftime("%Y-%m-%d_%H-%M-%S") + ".wav"
+for idx, device in enumerate(input_devices):
+    print(f"Input Device id {idx} - {device.get('name')}")
 
-def record_and_save(filename, volume=1.0, device=None):
-    print("Recording... Press CTRL+C to stop.")
-    try:
-        with sd.InputStream(samplerate=RATE, channels=CHANNELS, device=device) as stream:
-            audio_frames = []
-            while True:
-                audio_chunk, overflowed = stream.read(RATE)  # Record 1 second chunks
-                audio_frames.append(audio_chunk * volume)
-    except KeyboardInterrupt:
-        print("Recording stopped.")
-    finally:
-        audio_data = np.concatenate(audio_frames, axis=0)
-        wavio.write(filename, audio_data.astype(DTYPE), RATE, sampwidth=2)
+device_idx = int(input("\nEnter the index of the input device you want to use: "))
+device_id = input_devices[device_idx]['index']
 
-if __name__ == '__main__':
-    # List all audio devices
-    print(sd.query_devices())
-    mic_device = int(input("Enter the device ID for the microphone you want to use: "))
-    volume_level = float(input("Enter the volume level (range [0.0, 1.0]): "))
-    filename = generate_filename()
-    print(f"Recording will be saved to {filename}")
-    record_and_save(filename, volume=volume_level, device=mic_device)
+# Set up audio stream parameters
+chunk = 1024
+sample_format = pyaudio.paInt16
+channels = 1
+fs = 44100
+frames = []
+
+# Record audio in a separate thread
+def record_audio():
+    stream = p.open(format=sample_format, channels=channels, rate=fs, frames_per_buffer=chunk, input=True, input_device_index=device_id)
+    print("Recording... Press 'q' to stop.")
+    while not stop_recording.is_set():
+        data = stream.read(chunk, exception_on_overflow=False)
+        frames.append(data)
+    stream.stop_stream()
+    stream.close()
+
+stop_recording = threading.Event()
+recording_thread = threading.Thread(target=record_audio)
+recording_thread.start()
+
+# Wait for 'q' to stop recording
+input("Press 'q' and Enter to stop recording...")
+stop_recording.set()
+recording_thread.join()
+
+# Save audio file with current date and time as filename
+now = datetime.datetime.now()
+filename = now.strftime("%Y-%m-%d_%H-%M-%S") + ".wav"
+with wave.open(filename, 'wb') as wf:
+    wf.setnchannels(channels)
+    wf.setsampwidth(p.get_sample_size(sample_format))
+    wf.setframerate(fs)
+    wf.writeframes(b''.join(frames))
+
+print("Recording saved as", filename)
