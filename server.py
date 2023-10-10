@@ -3,7 +3,7 @@ import socket
 import threading
 
 # Server setup
-host = 'localhost'  # Change to your server IP
+host = '10.0.1.108'  # Change to your server IP
 port = 65432
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
