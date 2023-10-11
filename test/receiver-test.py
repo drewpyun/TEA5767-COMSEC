@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-# run sudo i2cdetect -y 1 to find the I2C address of the receiver
+# run "sudo i2cdetect -y 1" to find the I2C address of the receiver
 # used for testing the control of the receiver using TEA5767 on the raspberry pi through I2C
+# meant to run on the raspberry pi -- as such will not work on Windows, untested on Mac 
 
 import smbus2
 import subprocess

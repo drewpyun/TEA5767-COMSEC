@@ -1,5 +1,6 @@
 cffi==1.16.0
 numpy==1.26.0
+PyAudio==0.2.13
 pycparser==2.21
 smbus2==0.4.3
 sounddevice==0.4.6
