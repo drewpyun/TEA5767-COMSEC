@@ -4,4 +4,5 @@ PyAudio==0.2.13
 pycparser==2.21
 smbus2==0.4.3
 sounddevice==0.4.6
+Wave==0.0.2
 wavio==0.0.8
