@@ -2,6 +2,7 @@ import socket
 import pyaudio
 import json
 import threading
+import netifaces
 
 is_recording = False
 
@@ -24,8 +25,20 @@ def record_and_send(conn, device_index):
     stream.close()
     p.terminate()
 
+def get_available_ips():
+    ips = []
+    for iface in netifaces.interfaces():
+        if netifaces.AF_INET in netifaces.ifaddresses(iface):
+            for link in netifaces.ifaddresses(iface)[netifaces.AF_INET]:
+                ips.append(link['addr'])
+    return ips
+
 def main():
-    HOST = "127.0.0.1"
+    available_ips = get_available_ips()
+    for idx, ip in enumerate(available_ips):
+        print(f"{idx}. {ip}")
+    chosen_ip_index = int(input("Enter the index of the IP you want to host on: "))
+    HOST = available_ips[chosen_ip_index]
     PORT = 65432
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
