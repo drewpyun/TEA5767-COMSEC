@@ -1,5 +1,3 @@
-# create a client SSL/TLS certificate using the following command:
-# openssl req -new -newkey rsa:4096 -x509 -sha256 -days 365 -nodes -out server.crt -keyout server.key
 import socket
 import ssl
 import json

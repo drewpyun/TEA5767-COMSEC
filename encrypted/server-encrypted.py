@@ -1,3 +1,6 @@
+# create a server SSL/TLS certificate using the following command:
+# openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout server.key -out server.crt
+
 import socket
 import ssl
 import pyaudio

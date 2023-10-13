@@ -1,4 +1,4 @@
-# create a client SSL/TLS certificate using the following command:
+# create a database SSL/TLS certificate using the following command:
 # openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout database.key -out database.crt
 
 from flask import Flask, jsonify
