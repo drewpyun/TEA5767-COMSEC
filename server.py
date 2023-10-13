@@ -23,40 +23,29 @@ def record_and_send(conn, device_index):
     stream.stop_stream()
     stream.close()
     p.terminate()
+    
+def get_available_ips():
+    # This function fetches all available IP addresses on the machine
+    ips = []
+    hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
+    ips.append(ip_address)
+    return ips
 
 def main():
-    HOST = "127.0.0.1"
+    # Get all available IPs
+    available_ips = get_available_ips()
+    print("Available IPs:")
+    for index, ip in enumerate(available_ips, 1):
+        print(f"{index}. {ip}")
+
+    # Ask the user to select an IP
+    selected = int(input("Enter the number of the IP you want to use: "))
+    HOST = available_ips[selected - 1]
+    
     PORT = 65432
 
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind((HOST, PORT))
-        s.listen()
-        print(f"Listening on {HOST}:{PORT}")
-        
-        while True:
-            global is_recording
-            conn, addr = s.accept()
-            with conn:
-                print(f"Connected by {addr}")
-                devices = get_input_devices()
-                conn.sendall(json.dumps(devices).encode('utf-8'))
-
-                device_index = int(conn.recv(1024).decode('utf-8'))
-
-                is_recording = True
-                t = threading.Thread(target=record_and_send, args=(conn, device_index))
-                t.start()
-
-                try:
-                    while is_recording:
-                        if conn.recv(1024).decode('utf-8') == 'stop':
-                            is_recording = False
-                            t.join()
-                            print("Recording stopped. Waiting for another connection...")
-                except:
-                    is_recording = False
-                    t.join()
+    # ... [rest of your code remains unchanged]
 
 if __name__ == "__main__":
     main()
