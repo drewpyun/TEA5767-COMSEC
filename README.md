@@ -17,6 +17,7 @@ Once the server and client are connected, the server will stream the data from t
 It is not necessary to have a TEA5767 FM module to test these scripts as, at its core, it will take any audio input (such as a microphone) and stream it to the client.
 
 ## Install
+developed on python 3.11.6. Python 3.12 is not supported by pyaudio yet.
 pip install -r requirements.txt
 
 ## Usage
