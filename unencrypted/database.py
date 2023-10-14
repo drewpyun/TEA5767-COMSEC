@@ -1,15 +1,15 @@
-from flask import Flask, jsonify
-import psutil
-import socket
+from flask import Flask, jsonify  # Import Flask and jsonify from flask module
+import psutil  #  Library to access system information and process utilities
+import socket  # Import socket library for network interface functionalities
 
 # Function to get available network interfaces on the server
 def get_network_interfaces():
-    interfaces = psutil.net_if_addrs()
-    available_ips = []
+    interfaces = psutil.net_if_addrs()  # Get network interfaces
+    available_ips = []  # List to store available IPs
     for interface, addrs in interfaces.items():
         for addr in addrs:
-            if addr.family == socket.AF_INET:
-                available_ips.append((interface, addr.address))
+            if addr.family == socket.AF_INET:  # If the address is IPv4
+                available_ips.append((interface, addr.address))  # Add to the list
     return available_ips
 
 # Call the function to get available IPs and display them to the user
@@ -20,7 +20,7 @@ for i, (interface, ip) in enumerate(available_ips):
 
 # User selects an IP address to use for the Flask application
 ip_choice = int(input("Enter the number of the IP you want to use: "))
-chosen_ip = available_ips[ip_choice - 1][1]
+chosen_ip = available_ips[ip_choice - 1][1]  # Get the IP address from the list
 
 # Initialize Flask app
 app = Flask(__name__)
