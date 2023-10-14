@@ -27,3 +27,10 @@ Please do not use these certificates and SSL settings for production use.
 
 ## Dependencies
 This was run on python 3.11.0, and the following libraries can be installed using "pip install -r requirements.txt"
+
+
+## Issues 
+There might be a problem installing the pyaudio library. 
+You may have to install portaudio on macOS using homebrew. 
+For Windows you may have to install pipwin and then install pyaudio using pipwin.
+pip install pipwin -> pipwin install pyaudio
