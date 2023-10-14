@@ -49,7 +49,7 @@ def save_audio_file(frames):
 def main():
     context = ssl.create_default_context()
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-    context.load_verify_locations('server.crt')  # Changed to 'server.crt'
+    context.load_verify_locations('server.crt')
     context.check_hostname = False
     context.verify_mode = ssl.CERT_NONE
 
@@ -74,7 +74,7 @@ def main():
     try:
         response = requests.get(f"https://{database_ip}:8000/get_ips", verify=False)
         available_server_ips = response.json()['ips']
-    except requests.exceptions.JSONDecodeError:
+    except requests.exceptions.RequestException:
         print("Received an invalid JSON from the server. Exiting.")
         exit(1)
 
@@ -95,7 +95,14 @@ def main():
     with socket.create_connection((HOST, PORT)) as s:
         conn = context.wrap_socket(s, server_hostname=HOST)
 
-        device_data = json.loads(conn.recv(1024).decode('utf-8'))
+        # Receive 4-byte length string and convert to integer
+        length_str = conn.recv(4).decode('utf-8')
+        length = int(length_str)
+
+        # Receive exactly 'length' bytes for the JSON data
+        device_data_bytes = conn.recv(length)
+        device_data = json.loads(device_data_bytes.decode('utf-8'))
+
         for i, device in enumerate(device_data):
             print(f"{i+1}. {device['name']}")
 

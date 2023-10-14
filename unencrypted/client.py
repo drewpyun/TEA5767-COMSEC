@@ -26,12 +26,22 @@ def receive_data(conn, volume_multiplier, audio_queue):
             sample = int.from_bytes(data[i:i+2], byteorder='little', signed=True)
             adjusted_sample = int(sample * volume_multiplier)
             adjusted_data.extend(adjusted_sample.to_bytes(2, byteorder='little', signed=True))
-        stream.write(bytes(adjusted_data))  # Convert bytearray to bytes
-        audio_queue.put(bytes(adjusted_data))  # Put audio data in the queue
+        stream.write(bytes(adjusted_data))  
+        audio_queue.put(bytes(adjusted_data))
     stream.stop_stream()
     stream.close()
     p.terminate()
     print("Stopped receiving audio.")
+
+def receive_complete_data(sock, expected_length):
+    received_data = b""
+    while len(received_data) < expected_length:
+        remaining_length = expected_length - len(received_data)
+        new_data = sock.recv(min(remaining_length, 1024))
+        if not new_data:
+            raise ConnectionError("Socket connection broken")
+        received_data += new_data
+    return received_data.decode('utf-8')
 
 def save_audio_file(frames):
     if not frames:
@@ -84,12 +94,17 @@ def main():
     PORT = 65432
     volume_multiplier = float(input("Enter the volume multiplier (e.g., 0.5 for lower volume): "))
 
-    audio_queue = Queue()  # Create a queue to store audio data
+    audio_queue = Queue()
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
 
-        device_data = json.loads(s.recv(1024).decode('utf-8'))
+        length_str = s.recv(4).decode('utf-8')
+        expected_length = int(length_str)
+
+        json_str = receive_complete_data(s, expected_length)
+        device_data = json.loads(json_str)
+
         for i, device in enumerate(device_data):
             print(f"{i+1}. {device['name']}")
 

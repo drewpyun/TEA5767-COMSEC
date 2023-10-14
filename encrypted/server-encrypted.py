@@ -48,7 +48,7 @@ def main():
 
     # Server SSL context
     server_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    server_context.load_cert_chain(certfile='server.crt', keyfile='server.key')  # Add your server key here
+    server_context.load_cert_chain(certfile='server.crt', keyfile='server.key')
 
     # Check for saved database IP in server-settings.txt
     if os.path.exists("server-settings.txt"):
@@ -87,7 +87,17 @@ def main():
             with server_context.wrap_socket(conn, server_side=True) as secure_conn:  # Wrap the socket
                 print(f"Connected by {addr}")
                 devices = get_input_devices()
-                secure_conn.sendall(json.dumps(devices).encode('utf-8'))
+
+                # Convert devices list to JSON and find its length
+                devices_json = json.dumps(devices)
+                length_str = str(len(devices_json)).zfill(4)
+
+                # Send the length of JSON data first
+                secure_conn.sendall(length_str.encode('utf-8'))
+
+                # Now, send the actual JSON data
+                secure_conn.sendall(devices_json.encode('utf-8'))
+
                 device_index = int(secure_conn.recv(1024).decode('utf-8'))
                 is_recording = True
                 t = threading.Thread(target=record_and_send, args=(secure_conn, device_index))

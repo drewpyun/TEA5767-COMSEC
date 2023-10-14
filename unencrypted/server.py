@@ -73,7 +73,17 @@ def main():
             with conn:
                 print(f"Connected by {addr}")
                 devices = get_input_devices()
-                conn.sendall(json.dumps(devices).encode('utf-8'))
+
+                # Convert devices list to JSON and find its length
+                devices_json = json.dumps(devices)
+                length_str = str(len(devices_json)).zfill(4)
+
+                # Send the length of JSON data first
+                conn.sendall(length_str.encode('utf-8'))
+
+                # Now, send the actual JSON data
+                conn.sendall(devices_json.encode('utf-8'))
+
                 device_index = int(conn.recv(1024).decode('utf-8'))
                 is_recording = True
                 t = threading.Thread(target=record_and_send, args=(conn, device_index))
