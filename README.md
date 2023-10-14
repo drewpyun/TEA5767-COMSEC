@@ -16,6 +16,9 @@ Once the server and client are connected, the server will stream the data from t
 
 It is not necessary to have a TEA5767 FM module to test these scripts as at its core it will take any audio input (such as a microphone) and stream it to the client.
 
+## Install
+pip install -r requirements.txt
+
 ## Usage
 Run the database.py script first. 
 Run the server.py script next.
